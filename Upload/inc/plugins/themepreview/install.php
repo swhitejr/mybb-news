@@ -31,6 +31,7 @@ function themepreview_info()
         'website' => 'https://github.com/ShinkaDev-MyBB/mybb-theme-preview',
         'author' => 'Shinka',
         'authorsite' => 'https://github.com/ShinkaDev-MyBB',
+        "codename" => "themepreview",
         'version' => '1.0.0',
         'compatibility' => '18*',
     );
