@@ -1,5 +1,7 @@
 <?php
 
+global $plugins;
+
 $plugins->add_hook('index_start', 'news_index');
 require_once MYBB_ROOT . 'inc/plugins/news/functionality.php';
 
@@ -11,7 +13,7 @@ function news_index()
         $lang->load('news');
     }
 
-    $onindex = $mybb->settings['news_onindex'] ?? 5;
+    $onindex = $mybb->settings['news_onindex'] ?: 5;
     $query = news_get(0, $onindex);
     $news = news_build_items($query);
 
