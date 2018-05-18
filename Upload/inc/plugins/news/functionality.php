@@ -65,7 +65,7 @@ function news_get_paged()
 
     $page = $mybb->get_input('page', MyBB::INPUT_INT);
     $count = news_get_count();
-    $perpage = $mybb->settings['news_perpage'] ?: 10;
+    $perpage = $mybb->settings['news_perpage'] ? $mybb->settings['news_perpage'] : 10;
 
     if ($page > 0) {
         $start = ($page - 1) * $perpage;
@@ -120,7 +120,7 @@ function news_submit()
     $data = array(
         'text' => $_POST['text'],
         'tid' => $_POST['tid'],
-        'tags' => implode(',', $_POST['tags'] ?: array()),
+        'tags' => implode(',', $_POST['tags'] ? $_POST['tags'] : array()),
         'important' => $_POST['important'] === "on" ? true : false,
         'uid' => $mybb->user['uid'],
     );

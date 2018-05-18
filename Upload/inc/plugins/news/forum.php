@@ -13,7 +13,7 @@ function news_index()
         $lang->load('news');
     }
 
-    $onindex = $mybb->settings['news_onindex'] ?: 5;
+    $onindex = $mybb->settings['news_onindex'] ? $mybb->settings['news_onindex'] : 5;
     $query = news_get(0, $onindex);
     $news = news_build_items($query);
 
