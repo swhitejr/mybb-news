@@ -26,3 +26,12 @@ $l['news_canflag_description'] = 'Which usergroups can mark news as important.';
 
 $l['news_candelete'] = 'Can Delete News';
 $l['news_candelete_description'] = 'Which usergroups can delete news.';
+
+$l['news_candeleteown'] = 'Can Delete Own News';
+$l['news_candeleteown_description'] = 'Whether users can delete their own news, regardless of the above permission.';
+
+$l['news_canedit'] = 'Can Edit News';
+$l['news_canedit_description'] = 'Which usergroups can edit news.';
+
+$l['news_caneditown'] = 'Can Edit Own News';
+$l['news_caneditown_description'] = 'Whether users can edit their own news, regardless of the above permission.';

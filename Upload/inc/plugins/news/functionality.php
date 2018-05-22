@@ -31,7 +31,8 @@ function news_build_items($query)
         eval($templates->render('news_mark_as')) :
         '';
 
-        $delete = news_allowed($mybb->settings['news_candelete'], news_usergroups()) ?
+        $delete = news_allowed($mybb->settings['news_candelete'], news_usergroups()) ||
+        $mybb->settings['news_candeleteown'] ?
         eval($templates->render('news_delete')) :
         '';
         $news .= eval($templates->render('news_item'));
@@ -83,7 +84,7 @@ function news_get_count()
 }
 
 /**
- * Retrieves a page of news
+ * Query for a page of news
  *
  * Retrieves page number as input param.
  *
@@ -125,13 +126,13 @@ function news_get_paged()
 }
 
 /**
- * Queries for news records with optional limit
+ * Query for news records with optional limit
  *
  * @param  int   $start   Start of limit
  * @param  int   $perpage Number of records to return, end of limit
  * @return array List of news
  */
-function news_get($start = null, $perpage = 5)
+function news_get($start = null, $perpage = 5, $nid = null)
 {
     global $db;
 
@@ -139,8 +140,13 @@ function news_get($start = null, $perpage = 5)
         'user.uid, user.username, user.usergroup, user.displaygroup, thread.subject ' .
         'FROM ' . TABLE_PREFIX . 'news news ' .
         'INNER JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
-        'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ' .
-        'ORDER BY important DESC, created_at DESC ';
+        'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ';
+
+    if ($nid) {
+        $query .= 'WHERE nid = ' . $nid . ' ';
+    }
+
+    $query .= 'ORDER BY important DESC, created_at DESC ';
 
     if ($start !== null) {
         $query .= 'LIMIT ' . $start . ', ' . $perpage;
@@ -150,7 +156,7 @@ function news_get($start = null, $perpage = 5)
 }
 
 /**
- * Inserts valid news submission
+ * Insert valid news submission
  *
  * Builds submission with data from $_POST and current user.
  * Validates that current user has permission to submit news
@@ -162,42 +168,68 @@ function news_submit()
 {
     global $mybb, $db, $templates, $lang, $errors;
 
-    if (!news_allowed($mybb->settings['news_groups'], news_usergroups())) {
+    var_dump("HELLO");
+
+    if (!$lang->news) {
+        $lang->load('news');
+    }
+
+    $groups = news_usergroups();
+    if (!news_allowed($mybb->settings['news_groups'], $groups)) {
+        $errorlist = '<li>' . $lang->news_no_permission . '</li>';
+        $errors = eval($templates->render('error_inline'));
         return;
     }
 
+    var_dump($_POST['nid']);
+
     $data = array(
+        'nid' => $_POST['nid'] ? $_POST['nid'] : null,
         'title' => $db->escape_string($_POST['title']),
         'text' => $db->escape_string($_POST['text']),
-        'tid' => $_POST['tid'],
+        'tid' => (int) $_POST['tid'],
         'tags' => implode(',', $_POST['tags'] ?: array()),
-        'important' => $_POST['important'] === "on" ? true : false,
         'uid' => $mybb->user['uid'],
     );
+    if ($_POST['important'] === "on") {
+        $data['important'] = true;
+    }
 
-    if (news_valid_thread($data['tid'])) {
-        $db->insert_query('news', $data);
-    } else {
-        if (!$lang->news) {
-            $lang->load('news');
-        }
+    if (!news_valid_thread($data['tid'])) {
         $errorlist = '<li>' . $lang->news_invalid_thread . '</li>';
         $errors = eval($templates->render('error_inline'));
+        return;
+    }
+
+    if (isset($data['nid'])) {
+        if (!(news_allowed($mybb->settings['news_canedit'], $groups) || $mybb->settings['news_caneditown'])) {
+            $errorlist = '<li>' . $lang->news_no_permission . '</li>';
+            $errors = eval($templates->render('error_inline'));
+            return;
+        }
+        $db->update_query('news', $data, 'nid = ' . $data['nid']);
+    } else {
+        $db->insert_query('news', $data);
     }
 }
 
 /**
- * Marks news record as important or unimportant
+ * Mark news record as important or unimportant
  *
  * Inverts the current value of record's `important` field.
  */
 function news_mark()
 {
-    global $mybb, $db;
+    global $mybb, $db, $errors;
 
     $nid = $_POST['nid'];
-    if (!news_allowed($mybb->settings['news_canflag'], news_usergroups()) ||
-        $nid == '') {
+    if ($nid == '') {
+        return;
+    }
+
+    if (!news_allowed($mybb->settings['news_canflag'], news_usergroups())) {
+        $errorlist = '<li>' . $lang->news_no_permission . '</li>';
+        $errors = eval($templates->render('error_inline'));
         return;
     }
 
@@ -211,8 +243,6 @@ function news_mark()
 }
 
 /**
- * Delete news
- *
  * @return void
  */
 function news_delete()
@@ -220,8 +250,14 @@ function news_delete()
     global $mybb, $db;
 
     $nid = $_POST['nid'];
-    if (!news_allowed($mybb->settings['news_candelete'], news_usergroups()) ||
-        $nid == '') {
+    if ($nid == '') {
+        return;
+    }
+
+    $groups = news_usergroups();
+    if (!(news_allowed($mybb->settings['news_candelete'], $groups) || $mybb->settings['news_candeleteown'])) {
+        $errorlist = '<li>' . $lang->news_no_permission . '</li>';
+        $errors = eval($templates->render('error_inline'));
         return;
     }
 
@@ -229,7 +265,7 @@ function news_delete()
 }
 
 /**
- * Builds array of current user's usergroup and additional usergroups
+ * Build array of current user's usergroup and additional usergroups
  *
  * @return array Current user's usergroups
  */
@@ -246,7 +282,7 @@ function news_usergroups()
 }
 
 /**
- * Compares list of current groups with list of allowed groups
+ * Compare list of current groups with list of allowed groups
  *
  * @return bool Whether $allowed groups and current $groups intersect
  */
@@ -256,7 +292,7 @@ function news_allowed($allowed, $groups)
 }
 
 /**
- * Validates thread
+ * Validate thread
  *
  * Checks that thread exists and is in an allowed forum.
  *
@@ -292,7 +328,7 @@ function news_valid_thread($tid)
 }
 
 /**
- * Fetches value of setting $name and explodes into array
+ * Fetch value of setting $name and explodes into array
  *
  * Explodes outer list on newline, explodes inner list on "=".
  *
