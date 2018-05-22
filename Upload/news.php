@@ -18,10 +18,19 @@ $plugins->run_hooks("news_start");
 
 add_breadcrumb($lang->news, "news.php");
 
-$forceAll = process_action();
-$query = determine_query();
+process_action();
+
+$nid = (int) $_GET['nid'];
+$query = $nid ? news_get(0, 1, $nid) : news_get_paged();
 $news = news_build_items($query);
-$news_submit = build_submit_form();
+
+$item = null;
+if ($nid) {
+    $db->data_seek($query, 0);
+    $item = $db->fetch_array($query);
+    add_breadcrumb($item['title']);
+}
+$news_submit = build_submit_form($item);
 
 $page = eval($templates->render('news'));
 output_page($page);
@@ -41,48 +50,37 @@ function process_action()
         news_mark();
     } elseif ($action === "DELETE") {
         news_delete();
-    } else {
-        return false;
     }
-    return true;
 }
 
-function determine_query()
+function build_tag_options($news_tags = "")
 {
-    global $mybb, $db;
-
-    $nid = $mybb->get_input('nid', MyBB::INPUT_INT);
-    if (!$forceAll && $nid) {
-        $query = news_get(0, 1, $nid);
-        add_breadcrumb($db->fetch_field($query, 'title'));
-        $db->data_seek($query, 0);
-    } else {
-        $query = news_get_paged();
-    }
-
-    return $query;
-}
-
-function build_tag_options()
-{
+    $news_tags = explode(',', $news_tags);
     $taglist = news_explode_settings('news_tags');
     $tag_options = '';
     foreach ($taglist as $key => $value) {
+        $selected = in_array($key, $news_tags) ? "selected" : "";
         $tag = array('key' => $key, 'value' => $value);
-        $tag_options .= '<option value="' . $tag['key'] . '">' . $tag['value'] . '</option>';
+        $tag_options .= '<option value="' . $tag['key'] . '" ' . $selected . '>' . $tag['value'] . '</option>';
     }
     return $tag_options;
 }
 
-function build_submit_form()
+function build_submit_form($item = array())
 {
     global $mybb, $templates, $lang;
 
-    $tag_options = build_tag_options();
+    if (isset($item['tid']) &&
+        !(news_allowed($mybb->settings['news_canedit'], news_usergroups()) ||
+            $mybb->settings['news_caneditown'])) {
+        return;
+    }
+
+    $tag_options = build_tag_options($item['tags']);
     $news_submit = '';
     if (news_allowed($mybb->settings['news_groups'], news_usergroups())) {
         $canflag = news_allowed($mybb->settings['news_canflag'], news_usergroups());
-        $important = $canflag ? eval($templates->render('news_submit_important')) : '';
+        $important = $canflag && !isset($item['tid']) ? eval($templates->render('news_submit_important')) : '';
         $news_submit = eval($templates->render('news_submit'));
     }
     return $news_submit;
