@@ -31,7 +31,8 @@ function news_build_items($query)
         eval($templates->render('news_mark_as')) :
         '';
 
-        $delete = news_allowed($mybb->settings['news_candelete'], news_usergroups()) ?
+        $delete = news_allowed($mybb->settings['news_candelete'], news_usergroups()) ||
+        $mybb->settings['news_candeleteown'] ?
         eval($templates->render('news_delete')) :
         '';
         $news .= eval($templates->render('news_item'));
@@ -167,27 +168,48 @@ function news_submit()
 {
     global $mybb, $db, $templates, $lang, $errors;
 
-    if (!news_allowed($mybb->settings['news_groups'], news_usergroups())) {
+    var_dump("HELLO");
+
+    if (!$lang->news) {
+        $lang->load('news');
+    }
+
+    $groups = news_usergroups();
+    if (!news_allowed($mybb->settings['news_groups'], $groups)) {
+        $errorlist = '<li>' . $lang->news_no_permission . '</li>';
+        $errors = eval($templates->render('error_inline'));
         return;
     }
 
+    var_dump($_POST['nid']);
+
     $data = array(
+        'nid' => $_POST['nid'] ? $_POST['nid'] : null,
         'title' => $db->escape_string($_POST['title']),
         'text' => $db->escape_string($_POST['text']),
-        'tid' => $_POST['tid'],
+        'tid' => (int) $_POST['tid'],
         'tags' => implode(',', $_POST['tags'] ?: array()),
-        'important' => $_POST['important'] === "on" ? true : false,
         'uid' => $mybb->user['uid'],
     );
+    if ($_POST['important'] === "on") {
+        $data['important'] = true;
+    }
 
-    if (news_valid_thread($data['tid'])) {
-        $db->insert_query('news', $data);
-    } else {
-        if (!$lang->news) {
-            $lang->load('news');
-        }
+    if (!news_valid_thread($data['tid'])) {
         $errorlist = '<li>' . $lang->news_invalid_thread . '</li>';
         $errors = eval($templates->render('error_inline'));
+        return;
+    }
+
+    if (isset($data['nid'])) {
+        if (!(news_allowed($mybb->settings['news_canedit'], $groups) || $mybb->settings['news_caneditown'])) {
+            $errorlist = '<li>' . $lang->news_no_permission . '</li>';
+            $errors = eval($templates->render('error_inline'));
+            return;
+        }
+        $db->update_query('news', $data, 'nid = ' . $data['nid']);
+    } else {
+        $db->insert_query('news', $data);
     }
 }
 
@@ -198,11 +220,16 @@ function news_submit()
  */
 function news_mark()
 {
-    global $mybb, $db;
+    global $mybb, $db, $errors;
 
     $nid = $_POST['nid'];
-    if (!news_allowed($mybb->settings['news_canflag'], news_usergroups()) ||
-        $nid == '') {
+    if ($nid == '') {
+        return;
+    }
+
+    if (!news_allowed($mybb->settings['news_canflag'], news_usergroups())) {
+        $errorlist = '<li>' . $lang->news_no_permission . '</li>';
+        $errors = eval($templates->render('error_inline'));
         return;
     }
 
@@ -223,8 +250,14 @@ function news_delete()
     global $mybb, $db;
 
     $nid = $_POST['nid'];
-    if (!news_allowed($mybb->settings['news_candelete'], news_usergroups()) ||
-        $nid == '') {
+    if ($nid == '') {
+        return;
+    }
+
+    $groups = news_usergroups();
+    if (!(news_allowed($mybb->settings['news_candelete'], $groups) || $mybb->settings['news_candeleteown'])) {
+        $errorlist = '<li>' . $lang->news_no_permission . '</li>';
+        $errors = eval($templates->render('error_inline'));
         return;
     }
 
