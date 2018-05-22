@@ -6,7 +6,8 @@ define('THIS_SCRIPT', 'news.php');
 require_once "./global.php";
 // require_once MYBB_ROOT . 'inc/plugins/news/functionality.php';
 
-$templatelist = "news_page,news_item,news_tag,news_submit";
+$templatelist = "news, news_important, news_item, news_latest, news_mark_as, news_no_news, ";
+$templatelist .= "news_submit_important, news_submit, news_tag";
 
 global $mybb, $lang, $templates, $plugins, $db;
 
@@ -41,5 +42,5 @@ if (news_allowed($mybb->settings['news_groups'], news_usergroups())) {
     $news_submit = eval($templates->render('news_submit'));
 }
 
-$page = eval($templates->render('news_page'));
+$page = eval($templates->render('news'));
 output_page($page);

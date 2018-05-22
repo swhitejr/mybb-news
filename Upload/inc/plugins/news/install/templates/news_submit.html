@@ -1,0 +1,56 @@
+<form method="POST" action="news.php?action=POST">
+    <table class="tborder" cellspacing="0" cellpadding="5" border="0">
+        <thead>
+            <tr>
+                <td class="thead" colspan="2">
+                    <div>
+                        <strong>{$lang->news_submit}</strong>
+                    </div>
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="trow1">
+                <td>
+                    <label for="text">Title</label>
+                </td>
+                <td>
+                    <input class="textbox" name="title" id="title" maxlength="255" required />
+                </td>
+            </tr>
+            <tr class="trow1">
+                <td>
+                    <label for="text">Text</label>
+                </td>
+                <td>
+                    <input class="textbox" name="text" id="text" maxlength="255" required />
+                </td>
+            </tr>
+            <tr class="trow1">
+                <td>
+                    <label for="tid">Thread ID</label>
+                </td>
+                <td>
+                    <input class="textbox" name="tid" id="tid" maxlength="255" required />
+                </td>
+            </tr>
+            <tr class="trow1">
+                <td>
+                    <label for="tags">Tags</label>
+                </td>
+                <td>
+                    <select class="input" name="tags[]" id="tags" multiple size="5">
+                        {$tag_options}
+                    </select>
+                </td>
+            </tr>
+            <tr class="trow1">
+                <td></td>
+                <td>
+                    <input type="submit" value="Submit" class="button" />
+                </td>
+            </tr>
+            {$important}
+        </tbody>
+    </table>
+</form>

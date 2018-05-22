@@ -25,7 +25,7 @@ function news_info()
 
 function news_install()
 {
-    require_once MYBB_ROOT . 'inc/plugins/news/install/templates.php';
+    require_once MYBB_ROOT . "/inc/adminfunctions_templates.php";
     require_once MYBB_ROOT . 'inc/plugins/news/install/tables.php';
     require_once MYBB_ROOT . 'inc/plugins/news/install/settings.php';
 
@@ -34,15 +34,18 @@ function news_install()
     }
 
     news_create_template_group();
+    news_create_template();
+
     $gid = news_create_settings_group($settinggroup);
-
-    foreach ($templates as $name => $template) {
-        news_create_template($name, $template);
-    }
-
     foreach ($settings as $name => $setting) {
         news_create_setting($name, $setting, $gid);
     }
+
+    find_replace_templatesets(
+        "index",
+        "#" . preg_quote('{$header}') . "#i",
+        "{\$header}\n\n        {\$latest_news}"
+    );
 
     rebuild_settings();
 }
@@ -56,13 +59,20 @@ function news_is_installed()
 
 function news_uninstall()
 {
+    require_once MYBB_ROOT . "/inc/adminfunctions_templates.php";
     global $db;
 
     $db->drop_table('news');
     $db->delete_query('settinggroups', "name = 'newsgroup'");
     $db->delete_query('settings', "name LIKE 'news_%'");
     $db->delete_query('templategroups', "prefix = 'news'");
-    $db->delete_query('templates', "title LIKE 'news_%'");
+    $db->delete_query('templates', "title LIKE 'news_%' OR title = 'news'");
+
+    find_replace_templatesets(
+        "index",
+        "#" . preg_quote('{$latest_news}') . "#i",
+        ""
+    );
 }
 
 function news_activate()
@@ -71,6 +81,9 @@ function news_activate()
 function news_deactivate()
 {}
 
+/**
+ * @return void
+ */
 function news_create_table($name, $columns)
 {
     global $db;
@@ -83,6 +96,9 @@ function news_create_table($name, $columns)
     }
 }
 
+/**
+ * @return void
+ */
 function news_create_template_group()
 {
     global $lang, $db;
@@ -98,19 +114,38 @@ function news_create_template_group()
     ));
 }
 
-function news_create_template($name, $template)
+/**
+ * Create templates from files in `./install/templates`
+ *
+ * Uses file name (minus the .html extension) as template name
+ * and escaped file contents as template's html.
+ *
+ * @return void
+ */
+function news_create_template()
 {
     global $db;
 
-    $db->insert_query('templates', array(
-        'title' => 'news_' . $name,
-        'template' => $db->escape_string($template),
-        'sid' => '-2',
-        'version' => '',
-        'dateline' => time(),
-    ));
+    $url = MYBB_ROOT . 'inc/plugins/news/install/templates';
+    $files = array_slice(scandir($url), 2);
+
+    foreach ($files as $file) {
+        $template = file_get_contents($url . '/' . $file, true);
+        $name = substr($file, 0, -5); // trim off .html from file name
+        $db->insert_query('templates', array(
+            'title' => $db->escape_string($name),
+            'template' => $db->escape_string($template),
+            'sid' => '-2',
+            'version' => '',
+            'dateline' => time(),
+        ));
+    }
 }
 
+/**
+ * @param  array $group Data for setting group
+ * @return int   GID of new setting group
+ */
 function news_create_settings_group($group)
 {
     global $db;
@@ -118,6 +153,12 @@ function news_create_settings_group($group)
     return $db->insert_query("settinggroups", $group);
 }
 
+/**
+ * @param str   $name    Name of setting
+ * @param array $setting Data for setting
+ * @param int   $gid     Setting group ID
+ * @return void
+ */
 function news_create_setting($name, $setting, $gid)
 {
     global $db;
