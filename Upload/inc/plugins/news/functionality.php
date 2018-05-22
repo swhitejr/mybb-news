@@ -168,8 +168,6 @@ function news_submit()
 {
     global $mybb, $db, $templates, $lang, $errors;
 
-    var_dump("HELLO");
-
     if (!$lang->news) {
         $lang->load('news');
     }
@@ -180,8 +178,6 @@ function news_submit()
         $errors = eval($templates->render('error_inline'));
         return;
     }
-
-    var_dump($_POST['nid']);
 
     $data = array(
         'nid' => $_POST['nid'] ? $_POST['nid'] : null,
