@@ -139,7 +139,7 @@ function news_get($start = null, $perpage = 5)
         'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ' .
         'ORDER BY important DESC, created_at DESC ';
 
-    if ($start) {
+    if ($start !== null) {
         $query .= 'LIMIT ' . $start . ', ' . $perpage;
     }
 
