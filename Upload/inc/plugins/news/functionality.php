@@ -31,6 +31,9 @@ function news_build_items($query)
         eval($templates->render('news_mark_as')) :
         '';
 
+        $delete = news_allowed($mybb->settings['news_candelete'], news_usergroups()) ?
+        eval($templates->render('news_delete')) :
+        '';
         $news .= eval($templates->render('news_item'));
     }
 
@@ -205,6 +208,24 @@ function news_mark()
         ),
         'nid = ' . $nid
     );
+}
+
+/**
+ * Delete news
+ *
+ * @return void
+ */
+function news_delete()
+{
+    global $mybb, $db;
+
+    $nid = $_POST['nid'];
+    if (!news_allowed($mybb->settings['news_candelete'], news_usergroups()) ||
+        $nid == '') {
+        return;
+    }
+
+    $db->delete_query('news', 'nid = ' . $nid, 1);
 }
 
 /**

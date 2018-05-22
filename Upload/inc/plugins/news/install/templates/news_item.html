@@ -1,8 +1,13 @@
 <tr class="trow1 important-{$item['important']}">
     <td>
+        <div style="float: right;">
+            {$mark_as} {$delete}
+        </div>
+        {$important} {$item['tags']}
         <b>{$item['title']}</b>
-        <br/> by {$item['username']} on {$item['created_at']}</b> {$mark_as}
-        <br/> {$important} {$item['tags']} {$item['text']}
+        
+        <br/> by {$item['username']} on {$item['created_at']}</b>
+        <br/> {$item['text']}
         <br/> (<a href="/showthread.php?tid={$item['tid']}">{$item['subject']}</a>)
     </td>
 </tr>

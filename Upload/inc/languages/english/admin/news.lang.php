@@ -21,5 +21,8 @@ $l['news_perpage_description'] = 'Amount of news to show per page.';
 $l['news_onindex'] = 'Show on Index';
 $l['news_onindex_description'] = 'Amount of news to show on index.';
 
-$l['news_canflag'] = 'Can Mark as Important';
+$l['news_canflag'] = 'Can Mark News as Important';
 $l['news_canflag_description'] = 'Which usergroups can mark news as important.';
+
+$l['news_candelete'] = 'Can Delete News';
+$l['news_candelete_description'] = 'Which usergroups can delete news.';

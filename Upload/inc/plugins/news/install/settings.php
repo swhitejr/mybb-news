@@ -36,6 +36,13 @@ $settings = array(
         "value" => 4,
         "disporder" => 3,
     ),
+    "news_candelete" => array(
+        "title" => $lang->news_candelete,
+        "description" => $lang->news_candelete_description,
+        "optionscode" => "groupselect",
+        "value" => 4,
+        "disporder" => 3,
+    ),
     "news_tags" => array(
         "title" => $lang->news_tags,
         "description" => $lang->news_tags_description,

@@ -24,6 +24,8 @@ if ($action === "POST") {
     news_submit();
 } elseif ($action === "PUT") {
     news_mark();
+} elseif ($action === "DELETE") {
+    news_delete();
 }
 
 $query = news_get_paged();
