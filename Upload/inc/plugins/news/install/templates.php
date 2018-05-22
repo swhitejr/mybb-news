@@ -25,7 +25,8 @@ $templates = array(
 
     'item' => '<tr class="trow1 important-{$item[\'important\']}">
 	<td>
-		<b>Submitted by {$item[\'username\']} on {$item[\'created_at\']}</b> {$mark_as}<br/>
+		<b>{$item[\'title\']}</b><br/>
+		by {$item[\'username\']} on {$item[\'created_at\']}</b> {$mark_as}<br/>
 		{$important}
 		{$item[\'tags\']}
 		{$item[\'text\']}<br/>
@@ -37,8 +38,9 @@ $templates = array(
 
     'important' => '<span class="news-tag tag-important">{$lang->news_important}</span>',
 
-    'mark_as' => '<form method="POST" action="news.php?action=MARK" style="display:inline-block;">
+    'mark_as' => '<form method="POST" action="news.php?action=PUT" style="display:inline-block;">
 	<input type="hidden" name="nid" value="{$item[\'nid\']}" />
+	<input type="hidden" name="important" value="{$item[\'important\']}" />
 	<input class="button" type="submit" value="Mark as {$status}" />
 </form>',
 
@@ -94,6 +96,14 @@ $templates = array(
 			</tr>
 		</thead>
 		<tbody>
+			<tr class="trow1">
+				<td>
+					<label for="text">Title</label>
+				</td>
+				<td>
+					<input class="textbox" name="title" id="title" maxlength="255" required />
+				</td>
+			</tr>
 			<tr class="trow1">
 				<td>
 					<label for="text">Text</label>

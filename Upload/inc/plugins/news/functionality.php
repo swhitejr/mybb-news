@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * Construct news item templates
+ *
+ * Available template params:
+ * @var array  $item       News item with indices `created_at` (formatted per MyBB settings), `nid`, `text`,
+ *                        `tid`, `uid`, `tags`, `important`, `username` (styled appropriately), `usergroup`,
+ *                        `displaygroup`, and `subject`
+ * @var str    $important  Label for news items marked as important
+ * @var str    $status     "Important" or "Unimportant" (subject to $lang)
+ * @var str    $mark_as    Button to mark news item as important or unimportant
+ */
 function news_build_items($query)
 {
     global $mybb, $db, $templates, $lang;
@@ -30,6 +41,12 @@ function news_build_items($query)
     return $news;
 }
 
+/**
+ * Build news item tags template
+ *
+ * Available template params:
+ * @var  array  $tag  Tag item with available indices `key` and `value`
+ */
 function news_build_tags($given)
 {
     global $mybb, $templates;
@@ -51,6 +68,9 @@ function news_build_tags($given)
     return $tags;
 }
 
+/**
+ * @return int Total number of news
+ */
 function news_get_count()
 {
     global $db;
@@ -59,6 +79,13 @@ function news_get_count()
     return $db->fetch_field($query, "news");
 }
 
+/**
+ * Retrieves a page of news
+ *
+ * Retrieves page number as input param.
+ *
+ * @return array
+ */
 function news_get_paged()
 {
     global $mybb, $multipage;
@@ -94,21 +121,40 @@ function news_get_paged()
     return news_get($start, $perpage);
 }
 
-function news_get($start = null, $perpage = 1)
+/**
+ * Queries for news records with optional limit
+ *
+ * @param  int   $start   Start of limit
+ * @param  int   $perpage Number of records to return, end of limit
+ * @return array List of news
+ */
+function news_get($start = null, $perpage = 5)
 {
     global $db;
 
-    $query = 'SELECT news.nid, news.text, news.tid, news.uid, news.tags, news.important, ' .
-        'user.username, user.usergroup, user.displaygroup, thread.subject ' .
+    $query = 'SELECT news.nid, news.title, news.text, news.tid, news.uid, news.tags, news.important, ' .
+        'user.uid, user.username, user.usergroup, user.displaygroup, thread.subject ' .
         'FROM ' . TABLE_PREFIX . 'news news ' .
         'INNER JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
         'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ' .
-        'ORDER BY important DESC, created_at DESC ' .
-        'LIMIT ' . $start . ', ' . $perpage;
+        'ORDER BY important DESC, created_at DESC ';
+
+    if ($start) {
+        $query .= 'LIMIT ' . $start . ', ' . $perpage;
+    }
 
     return $db->write_query($query);
 }
 
+/**
+ * Inserts valid news submission
+ *
+ * Builds submission with data from $_POST and current user.
+ * Validates that current user has permission to submit news
+ * and that news is from a valid forum.
+ *
+ * @return void
+ */
 function news_submit()
 {
     global $mybb, $db, $templates, $lang, $errors;
@@ -118,7 +164,8 @@ function news_submit()
     }
 
     $data = array(
-        'text' => $_POST['text'],
+        'title' => $db->escape_string($_POST['title']),
+        'text' => $db->escape_string($_POST['text']),
         'tid' => $_POST['tid'],
         'tags' => implode(',', $_POST['tags'] ?: array()),
         'important' => $_POST['important'] === "on" ? true : false,
@@ -136,6 +183,11 @@ function news_submit()
     }
 }
 
+/**
+ * Marks news record as important or unimportant
+ *
+ * Inverts the current value of record's `important` field.
+ */
 function news_mark()
 {
     global $mybb, $db;
@@ -155,6 +207,11 @@ function news_mark()
     );
 }
 
+/**
+ * Builds array of current user's usergroup and additional usergroups
+ *
+ * @return array Current user's usergroups
+ */
 function news_usergroups()
 {
     global $mybb;
@@ -167,11 +224,25 @@ function news_usergroups()
     return $groups;
 }
 
+/**
+ * Compares list of current groups with list of allowed groups
+ *
+ * @return bool Whether $allowed groups and current $groups intersect
+ */
 function news_allowed($allowed, $groups)
 {
     return ($allowed == -1 || array_intersect($groups, explode(',', $allowed)));
 }
 
+/**
+ * Validates thread
+ *
+ * Checks that thread exists and is in an allowed forum.
+ *
+ * @param  int $tid Thread ID
+ * @return int 0 or 1, number of threads that match $tid and are in
+ *             a designated forum
+ */
 function news_valid_thread($tid)
 {
     global $mybb, $db;
@@ -200,9 +271,11 @@ function news_valid_thread($tid)
 }
 
 /**
- * Fetches value of setting $name and explodes into array delimited by '='.
+ * Fetches value of setting $name and explodes into array
  *
- * @param  string  $name  Case-sensitive name of the setting.
+ * Explodes outer list on newline, explodes inner list on "=".
+ *
+ * @param string $name Case-sensitive name of the setting.
  */
 function news_explode_settings($name)
 {

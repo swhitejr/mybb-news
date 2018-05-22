@@ -21,7 +21,7 @@ add_breadcrumb($lang->news);
 $action = $mybb->get_input('action');
 if ($action === "POST") {
     news_submit();
-} elseif ($action === "MARK") {
+} elseif ($action === "PUT") {
     news_mark();
 }
 
