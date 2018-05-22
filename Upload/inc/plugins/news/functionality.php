@@ -83,7 +83,7 @@ function news_get_count()
 }
 
 /**
- * Retrieves a page of news
+ * Query for a page of news
  *
  * Retrieves page number as input param.
  *
@@ -125,13 +125,13 @@ function news_get_paged()
 }
 
 /**
- * Queries for news records with optional limit
+ * Query for news records with optional limit
  *
  * @param  int   $start   Start of limit
  * @param  int   $perpage Number of records to return, end of limit
  * @return array List of news
  */
-function news_get($start = null, $perpage = 5)
+function news_get($start = null, $perpage = 5, $nid = null)
 {
     global $db;
 
@@ -139,8 +139,13 @@ function news_get($start = null, $perpage = 5)
         'user.uid, user.username, user.usergroup, user.displaygroup, thread.subject ' .
         'FROM ' . TABLE_PREFIX . 'news news ' .
         'INNER JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
-        'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ' .
-        'ORDER BY important DESC, created_at DESC ';
+        'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ';
+
+    if ($nid) {
+        $query .= 'WHERE nid = ' . $nid . ' ';
+    }
+
+    $query .= 'ORDER BY important DESC, created_at DESC ';
 
     if ($start !== null) {
         $query .= 'LIMIT ' . $start . ', ' . $perpage;
@@ -150,7 +155,7 @@ function news_get($start = null, $perpage = 5)
 }
 
 /**
- * Inserts valid news submission
+ * Insert valid news submission
  *
  * Builds submission with data from $_POST and current user.
  * Validates that current user has permission to submit news
@@ -187,7 +192,7 @@ function news_submit()
 }
 
 /**
- * Marks news record as important or unimportant
+ * Mark news record as important or unimportant
  *
  * Inverts the current value of record's `important` field.
  */
@@ -211,8 +216,6 @@ function news_mark()
 }
 
 /**
- * Delete news
- *
  * @return void
  */
 function news_delete()
@@ -229,7 +232,7 @@ function news_delete()
 }
 
 /**
- * Builds array of current user's usergroup and additional usergroups
+ * Build array of current user's usergroup and additional usergroups
  *
  * @return array Current user's usergroups
  */
@@ -246,7 +249,7 @@ function news_usergroups()
 }
 
 /**
- * Compares list of current groups with list of allowed groups
+ * Compare list of current groups with list of allowed groups
  *
  * @return bool Whether $allowed groups and current $groups intersect
  */
@@ -256,7 +259,7 @@ function news_allowed($allowed, $groups)
 }
 
 /**
- * Validates thread
+ * Validate thread
  *
  * Checks that thread exists and is in an allowed forum.
  *
@@ -292,7 +295,7 @@ function news_valid_thread($tid)
 }
 
 /**
- * Fetches value of setting $name and explodes into array
+ * Fetch value of setting $name and explodes into array
  *
  * Explodes outer list on newline, explodes inner list on "=".
  *

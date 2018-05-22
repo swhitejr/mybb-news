@@ -5,6 +5,9 @@ global $plugins;
 $plugins->add_hook('index_start', 'news_index');
 require_once MYBB_ROOT . 'inc/plugins/news/functionality.php';
 
+/**
+ * Display latest news on index
+ */
 function news_index()
 {
     global $mybb, $lang, $templates, $latest_news;
