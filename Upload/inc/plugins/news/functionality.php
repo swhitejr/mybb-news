@@ -90,7 +90,7 @@ function news_get_count()
  *
  * @return array
  */
-function news_get_paged()
+function news_get_paged($filters = null)
 {
     global $mybb, $multipage;
 
@@ -122,7 +122,8 @@ function news_get_paged()
     $page_url = str_replace("{page}", $page, "news.php");
     $multipage = multipage($count, $perpage, $page, $page_url);
 
-    return news_get($start, $perpage);
+    $options = array('start' => $start, 'perpage' => $perpage, 'filters' => $filters);
+    return news_get($options);
 }
 
 /**
@@ -132,7 +133,7 @@ function news_get_paged()
  * @param  int   $perpage Number of records to return, end of limit
  * @return array List of news
  */
-function news_get($start = null, $perpage = 5, $nid = null)
+function news_get($options = array())
 {
     global $db;
 
@@ -142,14 +143,20 @@ function news_get($start = null, $perpage = 5, $nid = null)
         'INNER JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
         'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ';
 
-    if ($nid) {
-        $query .= 'WHERE nid = ' . $nid . ' ';
+    if (isset($options['nid'])) {
+        $query .= 'WHERE nid = ' . $options['nid'] . ' ';
+    } else if (isset($options['filters']) && $options['filters'] !== "") {
+        $filters = explode(',', $options['filters']);
+        $filters = array_map(function ($filter) {
+            return "FIND_IN_SET('" . $filter . "', tags)";
+        }, $filters);
+        $query .= 'WHERE ' . implode(' OR ', $filters);
     }
 
-    $query .= 'ORDER BY important DESC, created_at DESC ';
+    $query .= ' ORDER BY important DESC, created_at DESC ';
 
-    if ($start !== null) {
-        $query .= 'LIMIT ' . $start . ', ' . $perpage;
+    if (isset($options['start'])) {
+        $query .= 'LIMIT ' . $options['start'] . ', ' . ($options['perpage'] ?: 5);
     }
 
     return $db->write_query($query);

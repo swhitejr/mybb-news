@@ -6,7 +6,7 @@ define('THIS_SCRIPT', 'news.php');
 require_once "./global.php";
 
 $templatelist = "news, news_important, news_item, news_latest, news_mark_as, news_no_news, ";
-$templatelist .= "news_submit_important, news_submit, news_tag, news_delete";
+$templatelist .= "news_submit_important, news_submit, news_tag, news_delete, news_tag_filter";
 
 global $mybb, $lang, $templates, $plugins, $db;
 
@@ -14,30 +14,36 @@ if (!$lang->news) {
     $lang->load('news');
 }
 
-$plugins->run_hooks("news_start");
-
 add_breadcrumb($lang->news, "news.php");
 
-process_action();
+$plugins->run_hooks("news_start");
 
 $nid = (int) $_GET['nid'];
-$query = $nid ? news_get(0, 1, $nid) : news_get_paged();
-$news = news_build_items($query);
+$taglist = news_explode_settings('news_tags');
+$filters = $mybb->get_input('tags');
+$options = array('start' => 0, 'perpage' => 1, 'nid' => $nid);
+
+$forceAll = process_action();
+$query = $nid ? news_get($options) : news_get_paged($filters);
 
 $item = null;
 if ($nid) {
-    $db->data_seek($query, 0);
     $item = $db->fetch_array($query);
     add_breadcrumb($item['title']);
+    $db->data_seek($query, 0);
 }
-$news_submit = build_submit_form($item);
+
+$news = news_build_items($query);
+$news_submit = build_submit_form($item, $taglist);
+$tags = build_tag_filters($filters, $taglist);
+
+$plugins->run_hooks("news_end");
 
 $page = eval($templates->render('news'));
 output_page($page);
 
 /**
- * Determine which action to perform by
- * query param `action`.
+ * Determine which action to perform by query param `action`.
  */
 function process_action()
 {
@@ -53,10 +59,14 @@ function process_action()
     }
 }
 
-function build_tag_options($news_tags = "")
+/**
+ * @param str  $news_tags Comma-delimited string of already selected tags
+ * @param str  $taglist   Defined tags
+ * @return str HTML options
+ */
+function build_tag_options($news_tags = "", $taglist = array())
 {
     $news_tags = explode(',', $news_tags);
-    $taglist = news_explode_settings('news_tags');
     $tag_options = '';
     foreach ($taglist as $key => $value) {
         $selected = in_array($key, $news_tags) ? "selected" : "";
@@ -66,7 +76,12 @@ function build_tag_options($news_tags = "")
     return $tag_options;
 }
 
-function build_submit_form($item = array())
+/**
+ * @param  array $item     Item being edited
+ * @param  array $taglist  Defined tags
+ * @return str   Evaluated template
+ */
+function build_submit_form($item = array(), $taglist = array())
 {
     global $mybb, $templates, $lang;
 
@@ -76,7 +91,7 @@ function build_submit_form($item = array())
         return;
     }
 
-    $tag_options = build_tag_options($item['tags']);
+    $tag_options = build_tag_options($item['tags'], $taglist);
     $news_submit = '';
     if (news_allowed($mybb->settings['news_groups'], news_usergroups())) {
         $canflag = news_allowed($mybb->settings['news_canflag'], news_usergroups());
@@ -84,4 +99,43 @@ function build_submit_form($item = array())
         $news_submit = eval($templates->render('news_submit'));
     }
     return $news_submit;
+}
+
+/**
+ * @param  array $taglist Defined tags
+ * @return str   Evaluated template
+ */
+function build_tag_filters($input = null, $taglist = array())
+{
+    global $mybb, $templates;
+
+    $og_filters = $input ? explode(',', $input) : array();
+    $tags = '';
+    foreach ($taglist as $key => $value) {
+        $filters = compute_filters($key, $og_filters);
+        $tag = array('key' => $key, 'value' => $value, 'status' => in_array($key, $og_filters) ? 'on' : 'off');
+        $tags .= eval($templates->render('news_tag_filter'));
+    }
+    return $tags;
+}
+
+/**
+ * Build query string for tag filters
+ *
+ * If $key is already in $og_filters, removes it. Otherwise, adds
+ * key to list.
+ *
+ * @param  str   $key        Tag to check
+ * @param  array $og_filters List of filters
+ * @return str   Comma-delimited string of tags to use as query param
+ */
+function compute_filters($key, $og_filters)
+{
+    if (in_array($key, $og_filters)) {
+        $filters = array_diff($og_filters, array($key));
+    } else {
+        $filters = $og_filters;
+        $filters[] = $key;
+    }
+    return implode(',', $filters);
 }

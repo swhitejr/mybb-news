@@ -1,4 +1,6 @@
 <form method="POST" action="news.php?action=DELETE" style="display:inline-block;">
     <input type="hidden" name="nid" value="{$item['nid']}" />
-    <input class="button" type="submit" value="{$lang->news_delete}" />
+    <button type="submit" class="news-delete" alt="{$lang->news_delete}">
+        <span class="icon-trash"></span>
+    </button>
 </form>
