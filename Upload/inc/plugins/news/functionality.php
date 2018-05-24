@@ -1,5 +1,7 @@
 <?php
 
+require_once "../Shinka/QueryBuilder/QueryBuilderHandler.php";
+
 /**
  * Construct news item templates
  *
@@ -131,31 +133,35 @@ function news_get($options = array())
 {
     global $db;
 
-    $query = 'SELECT news.nid, news.title, news.text, news.tid, news.uid, news.tags, news.important, ' .
-        'user.uid, user.username, user.usergroup, user.displaygroup, thread.subject ' .
-        'FROM ' . TABLE_PREFIX . 'news news ' .
-        'LEFT JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
-        'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ';
+    $QB = new Shinka_QueryBuilder_QueryBuilderHandler($db, TABLE_PREFIX);
+    // $QB = $QB->
+    // var_dump($QB->table("news")->select);
 
-    // Filter by nid or tags
-    if (isset($options['nid'])) {
-        $query .= 'WHERE nid = ' . $options['nid'] . ' ';
-    } else if (isset($options['filters']) && $options['filters'] !== "") {
-        $filters = explode(',', $options['filters']);
-        $filters = array_map(function ($filter) {
-            return "FIND_IN_SET('" . $filter . "', tags)";
-        }, $filters);
-        $query .= 'WHERE ' . implode(' OR ', $filters);
-    }
+    // $query = 'SELECT news.nid, news.title, news.text, news.tid, news.uid, news.tags, news.important, ' .
+    //     'user.uid, user.username, user.usergroup, user.displaygroup, thread.subject ' .
+    //     'FROM ' . TABLE_PREFIX . 'news news ' .
+    //     'LEFT JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
+    //     'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ';
 
-    $query .= ' ORDER BY important DESC, created_at DESC ';
+    // // Filter by nid or tags
+    // if (isset($options['nid'])) {
+    //     $query .= 'WHERE nid = ' . $options['nid'] . ' ';
+    // } else if (isset($options['filters']) && $options['filters'] !== "") {
+    //     $filters = explode(',', $options['filters']);
+    //     $filters = array_map(function ($filter) {
+    //         return "FIND_IN_SET('" . $filter . "', tags)";
+    //     }, $filters);
+    //     $query .= 'WHERE ' . implode(' OR ', $filters);
+    // }
 
-    // Paginate results
-    if (isset($options['start'])) {
-        $query .= 'LIMIT ' . $options['start'] . ', ' . ($options['perpage'] ?: 5);
-    }
+    // $query .= ' ORDER BY important DESC, created_at DESC ';
 
-    return $db->write_query($query);
+    // // Paginate results
+    // if (isset($options['start'])) {
+    //     $query .= 'LIMIT ' . $options['start'] . ', ' . ($options['perpage'] ?: 5);
+    // }
+
+    // return $db->write_query($query);
 }
 
 /**
