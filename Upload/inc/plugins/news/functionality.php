@@ -35,6 +35,7 @@ function news_build_items($query)
         $mybb->settings['news_candeleteown'] ?
         eval($templates->render('news_delete')) :
         '';
+        $thread = $item['tid'] ? eval($templates->render('news_thread')) : '';
         $news .= eval($templates->render('news_item'));
     }
 
@@ -98,6 +99,7 @@ function news_get_paged($filters = null)
     $count = news_get_count();
     $perpage = $mybb->settings['news_perpage'] ?: 10;
 
+    // Floor/ceil page number if necessary
     if ($page > 0) {
         $start = ($page - 1) * $perpage;
         $pages = $count / $perpage;
@@ -109,14 +111,6 @@ function news_get_paged($filters = null)
     } else {
         $start = 0;
         $page = 1;
-    }
-
-    $end = $start + $perpage;
-    $lower = $start + 1;
-    $upper = $end;
-
-    if ($upper > $count) {
-        $upper = $count;
     }
 
     $page_url = str_replace("{page}", $page, "news.php");
@@ -140,9 +134,10 @@ function news_get($options = array())
     $query = 'SELECT news.nid, news.title, news.text, news.tid, news.uid, news.tags, news.important, ' .
         'user.uid, user.username, user.usergroup, user.displaygroup, thread.subject ' .
         'FROM ' . TABLE_PREFIX . 'news news ' .
-        'INNER JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
+        'LEFT JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
         'INNER JOIN ' . TABLE_PREFIX . 'users user ON user.uid = news.uid ';
 
+    // Filter by nid or tags
     if (isset($options['nid'])) {
         $query .= 'WHERE nid = ' . $options['nid'] . ' ';
     } else if (isset($options['filters']) && $options['filters'] !== "") {
@@ -155,6 +150,7 @@ function news_get($options = array())
 
     $query .= ' ORDER BY important DESC, created_at DESC ';
 
+    // Paginate results
     if (isset($options['start'])) {
         $query .= 'LIMIT ' . $options['start'] . ', ' . ($options['perpage'] ?: 5);
     }
@@ -179,6 +175,7 @@ function news_submit()
         $lang->load('news');
     }
 
+    // Return error if user is not allowed to submit news
     $groups = news_usergroups();
     if (!news_allowed($mybb->settings['news_groups'], $groups)) {
         $errorlist = '<li>' . $lang->news_no_permission . '</li>';
@@ -198,12 +195,21 @@ function news_submit()
         $data['important'] = true;
     }
 
-    if (!news_valid_thread($data['tid'])) {
+    //  Return error if no tid and thread is required
+    if (!$data['tid'] && $mybb->settings['news_requirethread']) {
+        $errorlist = '<li>' . $lang->news_thread_required . '</li>';
+        $errors = eval($templates->render('error_inline'));
+        return;
+    }
+
+    // Return error if thread is not from a valid forum
+    if ($data['tid'] && !news_valid_thread($data['tid'])) {
         $errorlist = '<li>' . $lang->news_invalid_thread . '</li>';
         $errors = eval($templates->render('error_inline'));
         return;
     }
 
+    // If nid is provided, update the record. Otherwise, create a new record.
     if (isset($data['nid'])) {
         if (!(news_allowed($mybb->settings['news_canedit'], $groups) || $mybb->settings['news_caneditown'])) {
             $errorlist = '<li>' . $lang->news_no_permission . '</li>';
@@ -230,6 +236,7 @@ function news_mark()
         return;
     }
 
+    // Return error if user is not allowed to flag news
     if (!news_allowed($mybb->settings['news_canflag'], news_usergroups())) {
         $errorlist = '<li>' . $lang->news_no_permission . '</li>';
         $errors = eval($templates->render('error_inline'));
@@ -257,6 +264,7 @@ function news_delete()
         return;
     }
 
+    // Return error if user is not allowed to delete news
     $groups = news_usergroups();
     if (!(news_allowed($mybb->settings['news_candelete'], $groups) || $mybb->settings['news_candeleteown'])) {
         $errorlist = '<li>' . $lang->news_no_permission . '</li>';

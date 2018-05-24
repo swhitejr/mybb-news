@@ -96,6 +96,7 @@ function build_submit_form($item = array(), $taglist = array())
     if (news_allowed($mybb->settings['news_groups'], news_usergroups())) {
         $canflag = news_allowed($mybb->settings['news_canflag'], news_usergroups());
         $important = $canflag && !isset($item['tid']) ? eval($templates->render('news_submit_important')) : '';
+        $required = $mybb->settings['news_requirethread'] ? 'required' : '';
         $news_submit = eval($templates->render('news_submit'));
     }
     return $news_submit;

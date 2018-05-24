@@ -17,18 +17,22 @@
 	font-size: 13px;	
 }
 
-.news-filter::after {
+.news-filter::after, .news-delete::before {
     font-family: 'icomoon';
+    font-style: normal;
 }
 
-/* '\e901' -- check-circle */
 .news-filter--on::after {
     content: "\e901";
     color: #4ab32b;
 }
 
-/* '\f057' -- times-circle */
 .news-filter--off::after {
     content: "\f057";
     color: #e72f2f;
+}
+
+.news-icon-button {
+	background: none;
+	border: none;
 }

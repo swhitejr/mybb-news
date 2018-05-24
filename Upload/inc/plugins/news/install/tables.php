@@ -3,7 +3,7 @@
 $tables = array(
     'news' => array(
         'nid INT(10) UNSIGNED NOT NULL AUTO_INCREMENT',
-        'tid INT(10) UNSIGNED NOT NULL',
+        'tid INT(10) UNSIGNED',
         'uid INT(10) UNSIGNED NOT NULL',
         'title VARCHAR(255) NOT NULL',
         'text VARCHAR(255) NOT NULL',

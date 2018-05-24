@@ -13,7 +13,7 @@
         <tbody>
             <tr class="trow1">
                 <td>
-                    <label for="text">Title</label>
+                    <label for="text">{$lang->news_title}</label>
                 </td>
                 <td>
                     <input class="textbox" name="title" id="title" maxlength="255" value="{$item['title']}" required />
@@ -21,7 +21,7 @@
             </tr>
             <tr class="trow1">
                 <td>
-                    <label for="text">Text</label>
+                    <label for="text">{$lang->news_text}</label>
                 </td>
                 <td>
                     <input class="textbox" name="text" id="text" maxlength="255" value="{$item['text']}" required />
@@ -29,15 +29,15 @@
             </tr>
             <tr class="trow1">
                 <td>
-                    <label for="tid">Thread ID</label>
+                    <label for="tid">{$lang->news_tid}</label>
                 </td>
                 <td>
-                    <input class="textbox" name="tid" id="tid" maxlength="255" value="{$item['tid']}" required />
+                    <input class="textbox" name="tid" id="tid" maxlength="255" value="{$item['tid']}" {$required} />
                 </td>
             </tr>
             <tr class="trow1">
                 <td>
-                    <label for="tags">Tags</label>
+                    <label for="tags">{$lang->news_tags}</label>
                 </td>
                 <td>
                     <select class="input" name="tags[]" id="tags" multiple size="5">
@@ -48,7 +48,7 @@
             <tr class="trow1">
                 <td></td>
                 <td>
-                    <input type="submit" value="Submit" class="button" />
+                    <input type="submit" value="{$lang->news_submit}" class="button" />
                 </td>
             </tr>
             {$important}

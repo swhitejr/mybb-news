@@ -35,3 +35,6 @@ $l['news_canedit_description'] = 'Which usergroups can edit news.';
 
 $l['news_caneditown'] = 'Can Edit Own News';
 $l['news_caneditown_description'] = 'Whether users can edit their own news, regardless of the above permission.';
+
+$l['news_requirethread'] = 'Require Thread?';
+$l['news_requirethread_description'] = 'Whether submitted news must be associated with a thread.';
