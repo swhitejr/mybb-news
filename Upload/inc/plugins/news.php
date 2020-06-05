@@ -17,7 +17,6 @@ if (!defined('IN_MYBB')) {
 
 if (defined('IN_ADMINCP')) {
     require_once MYBB_ROOT . 'inc/plugins/news/install.php';
-    require_once MYBB_ROOT . 'inc/plugins/news/admin.php';
 } else {
     require_once MYBB_ROOT . 'inc/plugins/news/forum.php';
 }

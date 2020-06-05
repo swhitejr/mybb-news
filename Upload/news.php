@@ -43,13 +43,19 @@ function process_action()
 {
     global $mybb;
 
-    $action = $mybb->get_input('action');
-    if ($action === "POST") {
+    $action = $mybb->input['_method'];
+    if ($action === "post") {
         news_submit();
-    } elseif ($action === "PUT") {
+        header("Location: news.php", true);
+        die();
+    } elseif ($action === "put") {
         news_mark();
-    } elseif ($action === "DELETE") {
+        header("Location: news.php", true);
+        die();
+    } elseif ($action === "delete") {
         news_delete();
+        header("Location: news.php", true);
+        die();
     }
 }
 
@@ -72,8 +78,8 @@ function build_submit_form($item = array())
 
     if (isset($item['tid']) &&
         !(news_allowed($mybb->settings['news_canedit'], news_usergroups()) ||
-            $mybb->settings['news_caneditown'])) {
-        return;
+            ($mybb->settings['news_caneditown'] && $item['uid'] == $mybb->user['uid']))) {
+        return '';
     }
 
     $tag_options = build_tag_options($item['tags']);
