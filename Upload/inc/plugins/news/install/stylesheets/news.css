@@ -1,0 +1,38 @@
+.news-tag {
+    border: 1px solid black;
+    padding: 2px;
+    font-size: 10px;
+	margin-right: 5px;
+}
+
+.news-tag.personal {
+    border-color: #da00ff;
+}
+
+.news-tag.site_wide {
+    border-color: #9a8851;
+}
+
+.news-filter {
+	font-size: 13px;	
+}
+
+.news-filter::after, .news-delete::before {
+    font-family: 'icomoon';
+    font-style: normal;
+}
+
+.news-filter--on::after {
+    content: "\e901";
+    color: #4ab32b;
+}
+
+.news-filter--off::after {
+    content: "\f057";
+    color: #e72f2f;
+}
+
+.news-icon-button {
+	background: none;
+	border: none;
+}

@@ -17,7 +17,8 @@ function news_index()
     }
 
     $onindex = $mybb->settings['news_onindex'] ?: 5;
-    $query = news_get(0, $onindex);
+    $options = array('start' => 0, 'perpage' => $onindex);
+    $query = news_get($options);
     $news = news_build_items($query);
 
     $latest_news = eval($templates->render('news_latest'));

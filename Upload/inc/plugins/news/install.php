@@ -3,6 +3,9 @@ if (!defined("IN_MYBB")) {
     die("Direct initialization of this file is not allowed.");
 }
 
+/**
+ * @return array Plugin info
+ */
 function news_info()
 {
     global $lang;
@@ -23,9 +26,12 @@ function news_info()
     );
 }
 
+/**
+ * @return void
+ */
 function news_install()
 {
-    require_once MYBB_ROOT . "/inc/adminfunctions_templates.php";
+    require_once MYBB_ROOT . "inc/adminfunctions_templates.php";
     require_once MYBB_ROOT . 'inc/plugins/news/install/tables.php';
     require_once MYBB_ROOT . 'inc/plugins/news/install/settings.php';
 
@@ -34,11 +40,13 @@ function news_install()
     }
 
     news_create_template_group();
-    news_create_template();
+    news_create_templates();
+    news_create_stylesheet();
 
     $gid = news_create_settings_group($settinggroup);
+    $i = 1;
     foreach ($settings as $name => $setting) {
-        news_create_setting($name, $setting, $gid);
+        news_create_setting($name, $setting, $gid, $i++);
     }
 
     find_replace_templatesets(
@@ -50,6 +58,9 @@ function news_install()
     rebuild_settings();
 }
 
+/**
+ * @return boolean
+ */
 function news_is_installed()
 {
     global $db;
@@ -57,6 +68,9 @@ function news_is_installed()
     return $db->table_exists('news');
 }
 
+/**
+ * @return void
+ */
 function news_uninstall()
 {
     require_once MYBB_ROOT . "/inc/adminfunctions_templates.php";
@@ -67,6 +81,7 @@ function news_uninstall()
     $db->delete_query('settings', "name LIKE 'news_%'");
     $db->delete_query('templategroups', "prefix = 'news'");
     $db->delete_query('templates', "title LIKE 'news_%' OR title = 'news'");
+    news_delete_stylesheet();
 
     find_replace_templatesets(
         "index",
@@ -122,7 +137,7 @@ function news_create_template_group()
  *
  * @return void
  */
-function news_create_template()
+function news_create_templates()
 {
     global $db;
 
@@ -143,8 +158,32 @@ function news_create_template()
 }
 
 /**
+ * Create news.css stylesheet for master theme and update cache
+ *
+ * @return void
+ */
+function news_create_stylesheet()
+{
+    global $db;
+    require_once MYBB_ROOT . "admin/inc/functions_themes.php";
+
+    $url = MYBB_ROOT . 'inc/plugins/news/install/stylesheets/news.css';
+    $stylesheet = file_get_contents($url, true);
+
+    $db->insert_query('themestylesheets', array(
+        'name' => 'news.css',
+        'tid' => 1,
+        'attachedto' => 'index.php|news.php',
+        'stylesheet' => $db->escape_string($stylesheet),
+    ));
+
+    cache_stylesheet(1, "news.css", $stylesheet);
+    update_theme_stylesheet_list("1");
+}
+
+/**
  * @param  array $group Data for setting group
- * @return int   GID of new setting group
+ * @return int   ID of new setting group
  */
 function news_create_settings_group($group)
 {
@@ -154,17 +193,42 @@ function news_create_settings_group($group)
 }
 
 /**
- * @param str   $name    Name of setting
- * @param array $setting Data for setting
- * @param int   $gid     Setting group ID
+ * @param  str   $name    Name of setting
+ * @param  array $setting Data for setting
+ * @param  int   $gid     Setting group ID
  * @return void
  */
-function news_create_setting($name, $setting, $gid)
+function news_create_setting($name, $setting, $gid, $ndx = 1)
 {
     global $db;
 
     $setting["name"] = $name;
     $setting["gid"] = $gid;
+    $setting["disporder"] = $ndx;
 
     $db->insert_query("settings", $setting);
+}
+
+/**
+ * Deletes stylesheet and removes from cache
+ *
+ * @return void
+ */
+function news_delete_stylesheet()
+{
+    global $db;
+    require_once MYBB_ROOT . "admin/inc/functions_themes.php";
+
+    $db->delete_query('themestylesheets', "name = 'news.css'");
+
+    $query = $db->simple_select("themes", "tid");
+    while ($tid = $db->fetch_field($query, "tid")) {
+        $file = MYBB_ROOT . "cache/themes/theme{$tid}/news.css";
+        if (file_exists($file)) {
+            unlink($file);
+        }
+
+    }
+
+    update_theme_stylesheet_list("1");
 }

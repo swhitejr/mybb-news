@@ -8,9 +8,10 @@
             <b>{$item['title']}</b>
         </a>
 
-        <br/> by {$item['username']} on {$item['created_at']}</b>
+        <br/> {$lang->by} 
+        <a href="member.php?action=profile&uid={$item['uid']}">{$item['username']}</a>
+        {$lang->on} {$item['created_at']}
         <br/> {$item['text']}
-        <br/> (
-        <a href="/showthread.php?tid={$item['tid']}">{$item['subject']}</a>)
+        {$thread}
     </td>
 </tr>
