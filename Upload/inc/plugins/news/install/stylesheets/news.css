@@ -1,38 +1,113 @@
+.NewsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-column-gap: 15px
+}
+
+.NewsItem {
+    display: grid;
+    grid-template-rows: 50px 120px 1fr;;
+    text-align: center
+}
+
+.NewsItemTitle a {
+    text-decoration: none
+}
+
+.NewsItemText {
+    text-align: left
+}
+
+.NewsItemAuthor {
+    text-align: right
+}
+
+.NewsTags {
+    display: flex;
+    flex-wrap: wrap
+}
+
 .news-tag {
-    border: 1px solid black;
-    padding: 2px;
-    font-size: 10px;
-	margin-right: 5px;
+    font-size: 12px;
+    margin: 5px;
+    padding: 5px;
+    max-height: 20px;
+    color: white;
+    border-radius: 5px
 }
 
-.news-tag.personal {
-    border-color: #da00ff;
+.news-tag.death {
+    background-color: black
 }
 
-.news-tag.site_wide {
-    border-color: #9a8851;
+.news-tag.characterdevelopment {
+    background-color: darkgray
 }
 
-.news-filter {
-	font-size: 13px;	
+.news-tag.turning {
+    background-color: darkgray
 }
 
-.news-filter::after, .news-delete::before {
-    font-family: 'icomoon';
-    font-style: normal;
+.news-tag.localnews {
+    background-color: darkgray
 }
 
-.news-filter--on::after {
-    content: "\e901";
-    color: #4ab32b;
+.news-tag.stf {
+    background-color: darkgray
 }
 
-.news-filter--off::after {
-    content: "\f057";
-    color: #e72f2f;
+.news-tag.were {
+    background-color: #31a072
 }
 
-.news-icon-button {
-	background: none;
-	border: none;
+.news-tag.human {
+    background-color: #6ab9d8
+}
+
+.news-tag.vampire {
+    background-color: #d84936
+}
+
+.news-tag.psychic {
+    background-color: #ab8ed1
+}
+
+.news-tag.bdc {
+    background-color: #ff668c
+}
+
+.news-tag.ccp {
+    background-color: #6cb7ba
+}
+
+.news-tag.edc {
+    background-color: #90567A
+}
+
+.news-tag.pps {
+    background-color: #1d771d
+}
+
+.news-tag.php {
+    background-color: #ea771c
+}
+
+.news-tag.rcc {
+    background-color: #D24858
+}
+
+.news-tag.rvp {
+    background-color: #fe7d68
+}
+
+.news-tag.skc {
+    background-color: #5c7a6d
+}
+
+.news-tag.spp {
+    background-color: #7e399d
+}
+
+.NewsSubmit .textbox, .NewsSubmit select {
+    width: 75%
 }
