@@ -1,17 +1,26 @@
-<tr class="trow1 important-{$item['important']}">
-    <td>
-        <div style="float: right;">
-            {$mark_as} {$delete}
+<div class="Container Container__wrapper NewsItem important-{$item['important']}">
+    <div class="Container">
+        <div class="NewsItemTitle">
+            <a href="news.php?nid={$item['nid']}">
+                <b>{$item['title']}</b>
+            </a>
         </div>
-        {$important} {$item['tags']}
-        <a href="news.php?nid={$item['nid']}">
-            <b>{$item['title']}</b>
-        </a>
-
-        <br/> {$lang->by} 
-        <a href="member.php?action=profile&uid={$item['uid']}">{$item['username']}</a>
-        {$lang->on} {$item['created_at']}
-        <br/> {$item['text']}
-        {$thread}
-    </td>
-</tr>
+        <div class="NewsItemThread">
+            (<a href="/showthread.php?tid={$item['tid']}">{$item['subject']}</a>)
+        </div>
+    </div>
+    <div class="Container">
+        <div class="NewsItemText">
+            {$item['text']}
+        </div>
+        <div class="NewsItemAuthor">
+            <b>-{$item['username']}</b>
+        </div>
+    </div>
+    <div class="Container NewsTags">
+        {$item['tags']}
+    </div>
+    <div class="news_edits">
+        {$mark_as} {$delete}
+    </div>
+</div>

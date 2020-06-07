@@ -1,57 +1,58 @@
-<form method="POST" action="news.php?action=POST&nid={$item['nid']}">
+<form method="POST" action="" class="NewsSubmit">
+    <input type="hidden" name="_method" value="post"/>
     <input type="hidden" name="nid" id="nid" value="{$item['nid']}" />
-    <table class="tborder" cellspacing="0" cellpadding="5" border="0">
+    <table class="tborder" cellspacing="0" cellpadding="5" border="0" style="width: 100%;">
         <thead>
-            <tr>
-                <td class="thead" colspan="2">
-                    <div>
-                        <strong>{$lang->news_submit}</strong>
-                    </div>
-                </td>
-            </tr>
+        <tr>
+            <td class="thead" colspan="2">
+                <div>
+                    <strong>{$lang->news_submit}</strong>
+                </div>
+            </td>
+        </tr>
         </thead>
         <tbody>
-            <tr class="trow1">
-                <td>
-                    <label for="text">{$lang->news_title}</label>
-                </td>
-                <td>
-                    <input class="textbox" name="title" id="title" maxlength="255" value="{$item['title']}" required />
-                </td>
-            </tr>
-            <tr class="trow1">
-                <td>
-                    <label for="text">{$lang->news_text}</label>
-                </td>
-                <td>
-                    <input class="textbox" name="text" id="text" maxlength="255" value="{$item['text']}" required />
-                </td>
-            </tr>
-            <tr class="trow1">
-                <td>
-                    <label for="tid">{$lang->news_tid}</label>
-                </td>
-                <td>
-                    <input class="textbox" name="tid" id="tid" maxlength="255" value="{$item['tid']}" {$required} />
-                </td>
-            </tr>
-            <tr class="trow1">
-                <td>
-                    <label for="tags">{$lang->news_tags}</label>
-                </td>
-                <td>
-                    <select class="input" name="tags[]" id="tags" multiple size="5">
-                        {$tag_options}
-                    </select>
-                </td>
-            </tr>
-            <tr class="trow1">
-                <td></td>
-                <td>
-                    <input type="submit" value="{$lang->news_submit}" class="button" />
-                </td>
-            </tr>
-            {$important}
+        <tr class="trow1">
+            <td>
+                <label for="text">Title (<i>your own fun title for the submission</i>)</label>
+            </td>
+            <td>
+                <input class="textbox" name="title" id="title" maxlength="255" value="{$item['title']}" required />
+            </td>
+        </tr>
+        <tr class="trow1">
+            <td>
+                <label for="text">Description (<i>short, sweet, and informative</i></label>
+            </td>
+            <td>
+                <input class="textbox" name="text" id="text" maxlength="255" value="{$item['text']}" required />
+            </td>
+        </tr>
+        <tr class="trow1">
+            <td>
+                <label for="tid">Thread ID (<i>the numbers after TID in URL</i>)</label>
+            </td>
+            <td>
+                <input class="textbox" name="tid" id="tid" maxlength="255" value="{$item['tid']}" required />
+            </td>
+        </tr>
+        <tr class="trow1">
+            <td>
+                <label for="tags">Tags (<i>CTRL or CMD while clicking to select multiple</i>)</label>
+            </td>
+            <td>
+                <select class="input" name="tags[]" id="tags" multiple size="5">
+                    {$tag_options}
+                </select>
+            </td>
+        </tr>
+        <tr class="trow1">
+            <td></td>
+            <td>
+                <input type="submit" value="Submit" class="button" />
+            </td>
+        </tr>
+        {$important}
         </tbody>
     </table>
 </form>

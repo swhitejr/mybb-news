@@ -3,34 +3,28 @@
 <head>
     <title>{$mybb->settings['bbname']} - {$lang->news}</title>
     {$headerinclude}
-    <link rel="stylesheet" href="{$mybb->asset_url}/inc/plugins/news/assets/style.css">
 </head>
 
 <body>
-    {$header} {$errors} {$multipage}
+{$header}
+{$errors}
+<div class="Fluid">
+    <navigation>
+        {$multipage}
+        <div class="Container Container__wrapper">
+            <div class="Container__title thead">
+                <strong>{$lang->news}</strong>
+            </div>
+            <div class="Container NewsContainer">
+                {$news}
+            </div>
+        </div>
+        {$multipage}
 
-    <b>{$lang->news_filters}:</b> {$tags}
-
-    <br />
-    <br />
-
-    <table class="tborder" cellspacing="0" cellpadding="5" border="0">
-        <thead>
-            <tr>
-                <td class="thead" colspan="1">
-                    <div>
-                        <strong>{$lang->news}</strong>
-                    </div>
-                </td>
-            </tr>
-        </thead>
-        <tbody>
-            {$news}
-        </tbody>
-    </table>
-    {$multipage}
-
-    <br/> {$news_submit} {$footer}
+        <br/>
+        {$news_submit}
+</div>
+{$footer}
 </body>
 
 </html>
