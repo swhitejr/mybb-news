@@ -1,58 +1,63 @@
-<form method="POST" action="" class="NewsSubmit">
-    <input type="hidden" name="_method" value="post"/>
-    <input type="hidden" name="nid" id="nid" value="{$item['nid']}" />
-    <table class="tborder" cellspacing="0" cellpadding="5" border="0" style="width: 100%;">
-        <thead>
-        <tr>
-            <td class="thead" colspan="2">
-                <div>
-                    <strong>{$lang->news_submit}</strong>
-                </div>
-            </td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr class="trow1">
-            <td>
-                <label for="text">Title (<i>your own fun title for the submission</i>)</label>
-            </td>
-            <td>
-                <input class="textbox" name="title" id="title" maxlength="255" value="{$item['title']}" required />
-            </td>
-        </tr>
-        <tr class="trow1">
-            <td>
-                <label for="text">Description (<i>short, sweet, and informative</i></label>
-            </td>
-            <td>
-                <input class="textbox" name="text" id="text" maxlength="255" value="{$item['text']}" required />
-            </td>
-        </tr>
-        <tr class="trow1">
-            <td>
-                <label for="tid">Thread ID (<i>the numbers after TID in URL</i>)</label>
-            </td>
-            <td>
-                <input class="textbox" name="tid" id="tid" maxlength="255" value="{$item['tid']}" required />
-            </td>
-        </tr>
-        <tr class="trow1">
-            <td>
-                <label for="tags">Tags (<i>CTRL or CMD while clicking to select multiple</i>)</label>
-            </td>
-            <td>
-                <select class="input" name="tags[]" id="tags" multiple size="5">
-                    {$tag_options}
-                </select>
-            </td>
-        </tr>
-        <tr class="trow1">
-            <td></td>
-            <td>
-                <input type="submit" value="Submit" class="button" />
-            </td>
-        </tr>
-        {$important}
-        </tbody>
-    </table>
-</form>
+<div class="Container Container__wrapper">
+    <div class="Container__title thead">
+        <strong>{$lang->news_submit}</strong>
+    </div>
+    <div class="Container Container__wrapper">
+        <p>
+            Before you submit news, be sure to read <a
+                href="https://passingstrange.net/misc.php?pages=how-to-use-the-news" target="_blank">this handy
+            guide</a> with rules and tips for making the best out of the feature!
+        </p>
+        <hr>
+        <form method="POST" action="" class="NewsSubmit">
+            <input type="hidden" name="_method" value="post"/>
+            <input type="hidden" name="nid" id="nid" value="{$item['nid']}"/>
+            <table class="tborder" cellspacing="0" cellpadding="5" border="0" style="width: 100%;">
+                <tbody>
+                <tr class="trow1">
+                    <td>
+                        <label for="text">Title (<i>your own fun title for the submission</i>)</label>
+                    </td>
+                    <td>
+                        <input class="textbox" name="title" id="title" maxlength="255" value="{$item['title']}"
+                               required/>
+                    </td>
+                </tr>
+                <tr class="trow1">
+                    <td>
+                        <label for="text">Description (<i>short, sweet, and informative</i></label>
+                    </td>
+                    <td>
+                        <input class="textbox" name="text" id="text" maxlength="255" value="{$item['text']}" required/>
+                    </td>
+                </tr>
+                <tr class="trow1">
+                    <td>
+                        <label for="tid">Thread ID (<i>the numbers after TID in URL</i>)</label>
+                    </td>
+                    <td>
+                        <input class="textbox" name="tid" id="tid" maxlength="255" value="{$item['tid']}" required/>
+                    </td>
+                </tr>
+                <tr class="trow1">
+                    <td>
+                        <label for="tags">Tags (<i>CTRL or CMD while clicking to select multiple</i>)</label>
+                    </td>
+                    <td>
+                        <select class="input" name="tags[]" id="tags" multiple size="5">
+                            {$tag_options}
+                        </select>
+                    </td>
+                </tr>
+                <tr class="trow1">
+                    <td></td>
+                    <td>
+                        <input type="submit" value="Submit" class="button"/>
+                    </td>
+                </tr>
+                {$important}
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>
