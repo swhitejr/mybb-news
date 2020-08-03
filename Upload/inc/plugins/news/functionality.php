@@ -76,11 +76,20 @@ function news_build_tags($given)
 /**
  * @return int Total number of news
  */
-function news_get_count()
+function news_get_count($filters = null)
 {
     global $db;
 
-    $query = $db->simple_select("news", "COUNT(nid) as news", "", array('limit' => 1));
+    $whereClause = "";
+    if(!empty($filters)) {
+        $filters = explode(',', $filters);
+        $filters = array_map(function ($filter) {
+            return "FIND_IN_SET('" . $filter . "', tags)";
+        }, $filters);
+        $whereClause = implode(' AND ', $filters);
+    }
+
+    $query = $db->simple_select("news", "COUNT(nid) as news", $whereClause, array('limit' => 1));
     return $db->fetch_field($query, "news");
 }
 
@@ -96,7 +105,7 @@ function news_get_paged($filters = null)
     global $mybb, $multipage;
 
     $page = $mybb->get_input('page', MyBB::INPUT_INT);
-    $count = news_get_count();
+    $count = news_get_count($filters);
     $perpage = $mybb->settings['news_perpage'] ?: 10;
 
     // Floor/ceil page number if necessary
@@ -113,7 +122,11 @@ function news_get_paged($filters = null)
         $page = 1;
     }
 
-    $page_url = str_replace("{page}", $page, "news.php");
+    $page_url = "news.php";
+    if (!empty($filters)) {
+        $page_url .= "?tags=" . $filters;
+    }
+
     $multipage = multipage($count, $perpage, $page, $page_url);
 
     $options = array('start' => $start, 'perpage' => $perpage, 'filters' => $filters);
@@ -145,7 +158,7 @@ function news_get($options = array())
         $filters = array_map(function ($filter) {
             return "FIND_IN_SET('" . $filter . "', tags)";
         }, $filters);
-        $query .= 'WHERE ' . implode(' OR ', $filters);
+        $query .= 'WHERE ' . implode(' AND ', $filters);
     }
 
     $query .= ' ORDER BY important DESC, created_at DESC ';
