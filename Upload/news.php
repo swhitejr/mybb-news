@@ -47,21 +47,27 @@ output_page($page);
  */
 function process_action()
 {
-    global $mybb;
+    global $mybb, $errors;
 
     $action = $mybb->input['_method'];
     if ($action === "post") {
         news_submit();
-        header("Location: news.php", true);
-        die();
+        if(!empty(!$errors)) {
+            header("Location: news.php", true);
+            die();
+        }
     } elseif ($action === "put") {
         news_mark();
-        header("Location: news.php", true);
-        die();
+        if(!empty(!$errors)) {
+            header("Location: news.php", true);
+            die();
+        }
     } elseif ($action === "delete") {
         news_delete();
-        header("Location: news.php", true);
-        die();
+        if(!empty(!$errors)) {
+            header("Location: news.php", true);
+            die();
+        }
     }
 }
 
