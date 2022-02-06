@@ -170,26 +170,31 @@ function news_get($options = array())
     // Filter by nid or tags
     if (isset($options['nid'])) {
         $query .= 'WHERE nid = ' . $options['nid'] . ' ';
-    } else if ((isset($options['filters']) && $options['filters'] !== "")
-        || (isset($options['years']) && $options['years'] !== "")) {
-        // Only append the WHERE clause once
-        $query .= 'WHERE ';
+    } else {
+        $whereClause = "";
 
         if (isset($options['filters']) && $options['filters'] !== "") {
             $filters = explode(',', $options['filters']);
             $filters = array_map(function ($filter) {
                 return "FIND_IN_SET('" . $filter . "', tags)";
             }, $filters);
-            $query .= implode(' AND ', $filters);
+            $whereClause .= "(" . implode(' AND ', $filters) . ")";
         }
 
         if (isset($options['years']) && $options['years'] !== "") {
+            if(!empty($whereClause)) {
+                $whereClause .= " AND ";
+            }
             $years = explode(',', $options['years']);
             $years = array_map(function ($year) {
                 return "thread.dateline BETWEEN ".strtotime("1-1-".$year)." AND "
                     .strtotime("31-12-".$year." 11:59:59");
             }, $years);
-            $query .= implode(' OR ', $years);
+            $whereClause .= "(" . implode(' OR ', $years) . ")";
+        }
+
+        if(!empty($whereClause)) {
+            $query .= "WHERE " . $whereClause;
         }
     }
 

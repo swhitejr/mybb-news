@@ -36,7 +36,7 @@ if ($nid) {
 
 $news = news_build_items($query);
 $news_submit = build_submit_form($item, $taglist);
-$tags = build_tag_filters($filters, $taglist);
+$tags = build_tag_filters($filters, $taglist, $years);
 
 $plugins->run_hooks("news_end");
 
@@ -117,17 +117,18 @@ function build_submit_form($item = array(), $taglist = array())
 
 /**
  * @param  array $taglist Defined tags
- * @return str   Evaluated template
+ * @return string   Evaluated template
  */
-function build_tag_filters($input = null, $taglist = array())
+function build_tag_filters($filters = null, $taglist = array(), $years = null)
 {
     global $mybb, $templates;
 
-    $og_filters = $input ? explode(',', $input) : array();
+    $og_filters = $filters ? explode(',', $filters) : array();
     $tags = '';
     foreach ($taglist as $key => $value) {
         $filters = compute_filters($key, $og_filters);
         $tag = array('key' => $key, 'value' => $value, 'status' => in_array($key, $og_filters) ? 'on' : 'off');
+        $tagUrl = "news.php?tags={$filters}" . ($years ? "&years={$years}" : "");
         $tags .= eval($templates->render('news_tag_filter'));
     }
     return $tags;
@@ -165,7 +166,7 @@ function santize_years_input($input) {
     if(!empty($input)) {
         $input = explode(',', $input);
         $input = array_filter($input, function($year) {
-            return is_numeric($year);
+            return is_numeric($year) && strtotime("31-12-".$year." 11:59:59");
         });
 
         return implode(',', $input);
