@@ -7,9 +7,9 @@
  * @var array  $item       News item with indices `created_at` (formatted per MyBB settings), `nid`, `text`,
  *                        `tid`, `uid`, `tags`, `important`, `username` (styled appropriately), `usergroup`,
  *                        `displaygroup`, and `subject`
- * @var str    $important  Label for news items marked as important
- * @var str    $status     "Important" or "Unimportant" (subject to $lang)
- * @var str    $mark_as    Button to mark news item as important or unimportant
+ * @var string    $important  Label for news items marked as important
+ * @var string    $status     "Important" or "Unimportant" (subject to $lang)
+ * @var string    $mark_as    Button to mark news item as important or unimportant
  */
 function news_build_items($query)
 {
@@ -76,7 +76,7 @@ function news_build_tags($given)
 /**
  * @return int Total number of news
  */
-function news_get_count($filters = null)
+function news_get_count($filters = null, $years = null)
 {
     global $db;
 
@@ -86,11 +86,25 @@ function news_get_count($filters = null)
         $filters = array_map(function ($filter) {
             return "FIND_IN_SET('" . $filter . "', tags)";
         }, $filters);
-        $whereClause = implode(' AND ', $filters);
+        $whereClause .= "(" . implode(' AND ', $filters) . ")";
+    }
+    if(!empty($years)) {
+        if(!empty($whereClause)) {
+            $whereClause .= " AND ";
+        }
+        $years = explode(',', $years);
+        $years = array_map(function ($year) {
+            return "thread.dateline BETWEEN ".strtotime("1-1-".$year)." AND "
+                .strtotime("31-12-".$year." 11:59:59");
+        }, $years);
+        $whereClause .= "(" . implode(' OR ', $years) . ")";
     }
 
-    $query = $db->simple_select("news", "COUNT(nid) as news", $whereClause, array('limit' => 1));
-    return $db->fetch_field($query, "news");
+    $query = $db->write_query('SELECT COUNT(news.nid) as newsCount ' .
+        'FROM ' . TABLE_PREFIX . 'news news ' .
+        'LEFT JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
+        ($whereClause ? "WHERE "  . $whereClause : ""));
+    return $db->fetch_field($query, "newsCount");
 }
 
 /**
@@ -100,12 +114,12 @@ function news_get_count($filters = null)
  *
  * @return array
  */
-function news_get_paged($filters = null)
+function news_get_paged($filters = null, $years = null)
 {
     global $mybb, $multipage;
 
     $page = $mybb->get_input('page', MyBB::INPUT_INT);
-    $count = news_get_count($filters);
+    $count = news_get_count($filters, $years);
     $perpage = $mybb->settings['news_perpage'] ?: 10;
 
     // Floor/ceil page number if necessary
@@ -126,10 +140,13 @@ function news_get_paged($filters = null)
     if (!empty($filters)) {
         $page_url .= "?tags=" . $filters;
     }
+    if(!empty($years)) {
+        $page_url .= "?years=" . $years;
+    }
 
     $multipage = multipage($count, $perpage, $page, $page_url);
 
-    $options = array('start' => $start, 'perpage' => $perpage, 'filters' => $filters);
+    $options = array('start' => $start, 'perpage' => $perpage, 'filters' => $filters, 'years' => $years );
     return news_get($options);
 }
 
@@ -153,12 +170,27 @@ function news_get($options = array())
     // Filter by nid or tags
     if (isset($options['nid'])) {
         $query .= 'WHERE nid = ' . $options['nid'] . ' ';
-    } else if (isset($options['filters']) && $options['filters'] !== "") {
-        $filters = explode(',', $options['filters']);
-        $filters = array_map(function ($filter) {
-            return "FIND_IN_SET('" . $filter . "', tags)";
-        }, $filters);
-        $query .= 'WHERE ' . implode(' AND ', $filters);
+    } else if ((isset($options['filters']) && $options['filters'] !== "")
+        || (isset($options['years']) && $options['years'] !== "")) {
+        // Only append the WHERE clause once
+        $query .= 'WHERE ';
+
+        if (isset($options['filters']) && $options['filters'] !== "") {
+            $filters = explode(',', $options['filters']);
+            $filters = array_map(function ($filter) {
+                return "FIND_IN_SET('" . $filter . "', tags)";
+            }, $filters);
+            $query .= implode(' AND ', $filters);
+        }
+
+        if (isset($options['years']) && $options['years'] !== "") {
+            $years = explode(',', $options['years']);
+            $years = array_map(function ($year) {
+                return "thread.dateline BETWEEN ".strtotime("1-1-".$year)." AND "
+                    .strtotime("31-12-".$year." 11:59:59");
+            }, $years);
+            $query .= implode(' OR ', $years);
+        }
     }
 
     $query .= ' ORDER BY important DESC, created_at DESC ';
@@ -242,7 +274,7 @@ function news_submit()
  */
 function news_mark()
 {
-    global $mybb, $db, $errors;
+    global $mybb, $db, $errors, $lang, $templates;;
 
     $nid = $_POST['nid'];
     if ($nid == '') {
@@ -270,7 +302,7 @@ function news_mark()
  */
 function news_delete()
 {
-    global $mybb, $db;
+    global $mybb, $db, $lang, $templates;
 
     $nid = $_POST['nid'];
     if ($nid == '') {

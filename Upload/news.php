@@ -21,10 +21,11 @@ $plugins->run_hooks("news_start");
 $nid = (int) $_GET['nid'];
 $taglist = news_explode_settings('news_tags');
 $filters = $mybb->get_input('tags');
+$years = santize_years_input($mybb->get_input('years'));
 $options = array('start' => 0, 'perpage' => 1, 'nid' => $nid);
 
 $forceAll = process_action();
-$query = $nid ? news_get($options) : news_get_paged($filters);
+$query = $nid ? news_get($options) : news_get_paged($filters, $years);
 
 $item = null;
 if ($nid) {
@@ -151,4 +152,24 @@ function compute_filters($key, $og_filters)
         $filters[] = $key;
     }
     return implode(',', $filters);
+}
+
+/**
+ * Sanitize a comma separated list of numbers by removing any values from the string
+ * that aren't numbers
+ *
+ * @param $input string Comma separated string of values
+ * @return string Comma separated string of values with non-numbers removed
+ */
+function santize_years_input($input) {
+    if(!empty($input)) {
+        $input = explode(',', $input);
+        $input = array_filter($input, function($year) {
+            return is_numeric($year);
+        });
+
+        return implode(',', $input);
+    }
+
+    return $input;
 }
