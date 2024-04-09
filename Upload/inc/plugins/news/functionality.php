@@ -21,7 +21,7 @@ function news_build_items($query)
 
     $news = '';
     while ($item = $db->fetch_array($query)) {
-        $item['created_at'] = my_date($mybb->settings['dateformat'], $item['created_at']);
+        $item['created_at'] = my_date($mybb->settings['dateformat'], strtotime($item['created_at']));
         $item['username'] = format_name($item['username'], $item['usergroup'], $item['displaygroup']);
         $item['tags'] = news_build_tags($item['tags']);
         $important = $item['important'] ? eval($templates->render('news_important')) : '';
@@ -161,7 +161,7 @@ function news_get($options = array())
 {
     global $db;
 
-    $query = 'SELECT news.nid, news.title, news.text, news.tid, news.uid, news.tags, news.important, ' .
+    $query = 'SELECT news.nid, news.title, news.text, news.tid, news.uid, news.tags, news.important, news.created_at, ' .
         'user.uid, user.username, user.usergroup, user.displaygroup, thread.subject ' .
         'FROM ' . TABLE_PREFIX . 'news news ' .
         'LEFT JOIN ' . TABLE_PREFIX . 'threads thread ON thread.tid = news.tid ' .
